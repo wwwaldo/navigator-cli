@@ -26,6 +26,9 @@ navigator config --api-key sk-ant-...
 |---------|-------------|
 | `navigator chat` | Start a conversation with Claude (supports tools: Read, Edit, Bash, etc.) |
 | `navigator learn` | Process recent conversations and extract behavioral preferences |
+| `navigator evaluate <file>` | Evaluate an external `conversations.json` file (e.g. Claude desktop export) |
+| `navigator persona load <file>` | Load a JSON/JSONL file as system prompt (e.g. evaluated output) |
+| `navigator persona clear` | Clear the loaded persona |
 | `navigator preferences` | View current guidelines. Use `--clear` to reset |
 | `navigator config` | Set API key or model |
 | `navigator completion` | Print shell completion script (see below) |
@@ -61,3 +64,22 @@ Over time, Claude becomes personalized to you.
 Set `NAVIGATOR_HOME` to use a different directory (e.g. for testing).
 
 **Debug:** Set `NAVIGATOR_DEBUG=1` to log API responses and CLI stderr (e.g. when debugging "Invalid API key").
+
+## Evaluating external conversation files
+
+To run the evaluator on a `conversations.json` file (e.g. exported from Claude desktop):
+
+```bash
+navigator evaluate conversations.json
+```
+
+Results are written to `conversations.evaluated.jsonl`. Use `--output path.jsonl` to customize, or `--limit N` to process only the first N eligible conversations (useful for testing).
+
+To use the evaluated output as your chat persona:
+
+```bash
+navigator persona load conversations.evaluated.jsonl
+navigator chat
+```
+
+Persona files can be JSONL (evaluated format), JSON with a `persona` or `system_prompt` key, or plain text.

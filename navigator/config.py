@@ -100,6 +100,37 @@ def set_last_evaluated(timestamp: str) -> None:
     save_config(config)
 
 
+def get_persona_file() -> str | None:
+    """Get path to loaded persona file (JSON/JSONL)."""
+    return load_config().get("persona_file")
+
+
+def set_persona_file(path: str | Path | None) -> None:
+    """Set persona file path. Pass None to clear."""
+    config = load_config()
+    if path is None:
+        config.pop("persona_file", None)
+        config.pop("persona_summary", None)
+    else:
+        config["persona_file"] = str(Path(path).resolve())
+    save_config(config)
+
+
+def get_persona_summary() -> str | None:
+    """Get the cached persona summary (generated at load time)."""
+    return load_config().get("persona_summary")
+
+
+def set_persona_summary(summary: str | None) -> None:
+    """Set persona summary. Pass None to clear."""
+    config = load_config()
+    if summary is None:
+        config.pop("persona_summary", None)
+    else:
+        config["persona_summary"] = summary
+    save_config(config)
+
+
 def _is_api_key(token: str) -> bool:
     """True if token is an API key (sk-ant-api03-...), else OAuth/setup-token (sk-ant-oat01-...).
     Note: OAuth tokens are rejected by the API for programmatic access ('OAuth authentication

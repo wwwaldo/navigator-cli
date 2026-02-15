@@ -16,8 +16,8 @@ from claude_agent_sdk.types import (
     UserMessage,
 )
 
-from .config import get_auth_env, get_model, is_debug
-from .store import format_preferences_for_prompt, load_preferences
+from .config import get_auth_env, get_model, get_persona_file, is_debug
+from .store import format_preferences_for_prompt, load_persona_from_file, load_preferences
 
 
 def _stderr_callback(line: str) -> None:
@@ -28,8 +28,18 @@ def _stderr_callback(line: str) -> None:
 
 def build_chat_options(cwd: Path | None = None) -> ClaudeAgentOptions:
     """Build ClaudeAgentOptions with preferences injected and tools enabled."""
+    blocks: list[str] = []
+
+    persona_path = get_persona_file()
+    if persona_path and Path(persona_path).exists():
+        blocks.append(load_persona_from_file(Path(persona_path)))
+
     preferences = load_preferences()
-    preferences_block = format_preferences_for_prompt(preferences)
+    pref_block = format_preferences_for_prompt(preferences)
+    if pref_block:
+        blocks.append(pref_block)
+
+    preferences_block = "\n\n".join(blocks) if blocks else ""
 
     env = get_auth_env()
     if is_debug() and "ANTHROPIC_CUSTOM_HEADERS" in env:

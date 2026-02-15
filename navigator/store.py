@@ -128,3 +128,52 @@ def format_preferences_for_prompt(preferences: list[dict]) -> str:
 
     lines.append("</user_preferences>")
     return "\n".join(lines)
+
+
+def load_persona_from_file(path: Path) -> str:
+    """Load persona/system prompt from a JSON or JSONL file.
+
+    Supports:
+    - JSONL or JSON array of preference objects (behavioral_guidelines, example_pairs)
+    - JSON object with "persona" or "system_prompt" key (raw text)
+    - Plain text (non-JSON) used as-is
+    """
+    content = path.read_text()
+    content_stripped = content.strip()
+
+    # Try JSON first
+    try:
+        # JSONL: one JSON object per line
+        if "\n" in content_stripped and not content_stripped.startswith("["):
+            prefs = []
+            for line in content_stripped.split("\n"):
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    prefs.append(json.loads(line))
+                except json.JSONDecodeError:
+                    pass
+            if prefs:
+                return format_preferences_for_prompt(prefs)
+        else:
+            data = json.loads(content_stripped)
+            if isinstance(data, list):
+                return format_preferences_for_prompt(data)
+            if isinstance(data, dict):
+                for key in ("persona", "system_prompt", "guidelines"):
+                    val = data.get(key)
+                    if val:
+                        if isinstance(val, str):
+                            return f"<user_preferences>\n{val}\n</user_preferences>"
+                        if isinstance(val, list):
+                            prefs = [
+                                {"behavioral_guidelines": v} if isinstance(v, str) else v
+                                for v in val
+                            ]
+                            return format_preferences_for_prompt(prefs)
+    except json.JSONDecodeError:
+        pass
+
+    # Plain text
+    return f"<user_preferences>\n{content_stripped}\n</user_preferences>"

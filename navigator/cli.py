@@ -11,9 +11,21 @@ from rich.panel import Panel
 from rich.prompt import Prompt
 
 from .client import build_chat_options, chat_turn
-from .config import get_model, get_token, set_api_key, set_model, set_token
+from .config import (
+    get_model,
+    get_persona_file,
+    get_persona_summary,
+    get_token,
+    set_api_key,
+    set_model,
+    set_token,
+    set_persona_file,
+    set_persona_summary,
+)
 from .evaluator import run_learn
-from .store import append_conversation, clear_preferences, load_preferences
+from .evaluate_file import run_evaluate_file
+from .persona import summarize_persona
+from .store import append_conversation, clear_preferences, load_preferences, load_persona_from_file
 
 app = typer.Typer(
     name="navigator",
@@ -186,6 +198,57 @@ def preferences(
                 console.print(f"   [dim]Do this:[/dim] {do_this}")
 
 
+persona_app = typer.Typer(help="Load a persona from a JSON/JSONL file into the system prompt.")
+
+
+@persona_app.command("load")
+def persona_load(
+    file: Path = typer.Argument(
+        ...,
+        help="Path to JSON or JSONL file (evaluated output, or JSON with persona/system_prompt key)",
+        exists=True,
+    ),
+):
+    """Load a persona file. Its content will be injected into the system prompt when chatting."""
+    content = load_persona_from_file(file)
+    set_persona_file(file)
+
+    with console.status("Summarizing persona..."):
+        summary = summarize_persona(content)
+    if summary:
+        set_persona_summary(summary)
+        console.print(f"[green]Persona loaded from {file}[/green]")
+    else:
+        set_persona_summary(None)
+        console.print(f"[green]Persona loaded from {file}[/green]")
+        console.print("[dim]Could not generate summary (API key required).[/dim]")
+    console.print("[dim]Use 'navigator persona clear' to remove.[/dim]")
+
+
+@persona_app.command("clear")
+def persona_clear():
+    """Clear the loaded persona."""
+    set_persona_file(None)
+    console.print("[green]Persona cleared.[/green]")
+
+
+@persona_app.command("show")
+def persona_show():
+    """Show the currently loaded persona file and its summary."""
+    path = get_persona_file()
+    if not path:
+        console.print("[dim]No persona loaded.[/dim]")
+        return
+    console.print(f"Persona: [bold]{path}[/bold]")
+    summary = get_persona_summary()
+    if summary:
+        console.print()
+        console.print(Panel(summary, title="Summary", border_style="dim"))
+
+
+app.add_typer(persona_app, name="persona")
+
+
 @app.command()
 def completion(
     shell: str = typer.Argument(
@@ -214,6 +277,47 @@ def completion(
 
 
 @app.command()
+def evaluate(
+    input_file: Path = typer.Argument(
+        ...,
+        help="Path to conversations.json (JSON array of conversations with chat_messages)",
+        exists=True,
+    ),
+    output: Path | None = typer.Option(
+        None,
+        "--output",
+        "-o",
+        help="Output JSONL file (default: input.evaluated.jsonl)",
+    ),
+    limit: int | None = typer.Option(
+        None,
+        "--limit",
+        "-n",
+        help="Max number of conversations to evaluate (for testing)",
+    ),
+):
+    """Evaluate an external conversations.json file and extract behavioral preferences."""
+    try:
+        evaluated, with_issues = run_evaluate_file(
+            input_path=input_file,
+            output_path=output,
+            limit=limit,
+        )
+        out_path = output or input_file.with_suffix(".evaluated.jsonl")
+        console.print(f"[green]Evaluated {evaluated} conversation(s).[/green]")
+        console.print(f"[green]{with_issues} had extractable preferences → {out_path}[/green]")
+    except ValueError as e:
+        console.print(f"[red]{e}[/red]")
+        raise typer.Exit(1)
+    except Exception as e:
+        console.print(f"[red]Error: {e}[/red]")
+        if __import__("os").environ.get("NAVIGATOR_DEBUG"):
+            import traceback
+            traceback.print_exc()
+        raise typer.Exit(1)
+
+
+@app.command()
 def config(
     api_key: str = typer.Option(None, "--api-key", help="Set API key (from console.anthropic.com)"),
     token: str = typer.Option(None, "--token", help="Set setup-token (from claude setup-token; may not work for API)"),
@@ -233,8 +337,10 @@ def config(
     if not api_key and not token and not model:
         m = get_model()
         has_auth = bool(get_token())
+        persona = get_persona_file()
         console.print(f"Model: {m}")
         console.print(f"Auth: {'set' if has_auth else 'not set'}")
+        console.print(f"Persona: {persona or 'none'}")
 
 
 if __name__ == "__main__":
