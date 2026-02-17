@@ -5,7 +5,8 @@
 set -e
 
 BASE_URL="${NAVIGATOR_INSTALL_URL:-https://getnavigator.app}"
-WHEEL_URL="$BASE_URL/downloads/navigator.whl"
+WHEEL_FILE=$(curl -fsSL "$BASE_URL/downloads/latest.txt" 2>/dev/null || echo "navigator-0.1.0-py3-none-any.whl")
+WHEEL_URL="$BASE_URL/downloads/$WHEEL_FILE"
 
 # Check Python
 if ! command -v python3 >/dev/null 2>&1; then
@@ -18,11 +19,7 @@ python3 -c 'import sys; exit(0 if sys.version_info >= (3, 10) else 1)' 2>/dev/nu
 }
 
 echo "Installing Navigator..."
-TMP_WHL="${TMPDIR:-/tmp}/navigator-install-$$.whl"
-trap 'rm -f "$TMP_WHL"' EXIT
-
-curl -fsSL "$WHEEL_URL" -o "$TMP_WHL"
-python3 -m pip install --quiet "$TMP_WHL"
+python3 -m pip install --quiet "$WHEEL_URL"
 
 if command -v navigator >/dev/null 2>&1; then
   echo ""

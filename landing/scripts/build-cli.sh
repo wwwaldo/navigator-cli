@@ -18,8 +18,10 @@ mkdir -p "$DOWNLOADS_DIR"
 # Copy wheel (universal py3-none-any works on all platforms)
 WHEEL=$(ls dist/navigator-*-py3-none-any.whl 2>/dev/null | head -1)
 if [ -n "$WHEEL" ]; then
-  cp "$WHEEL" "$DOWNLOADS_DIR/navigator.whl"
-  echo "Copied $(basename "$WHEEL") -> downloads/navigator.whl"
+  WHEEL_BASENAME=$(basename "$WHEEL")
+  cp "$WHEEL" "$DOWNLOADS_DIR/$WHEEL_BASENAME"
+  echo "$WHEEL_BASENAME" > "$DOWNLOADS_DIR/latest.txt"
+  echo "Copied $WHEEL_BASENAME -> downloads/"
 fi
 
 # Copy sdist for pip install from source

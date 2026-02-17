@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import './Download.css'
 
 function CopyIcon() {
@@ -46,8 +46,18 @@ function CopyButton({ text, label }) {
 }
 
 export default function Download() {
-  // Use relative URL so it works on any domain
-  const wheelUrl = '/downloads/navigator.whl'
+  const [wheelFile, setWheelFile] = useState('navigator-0.1.0-py3-none-any.whl')
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+    fetch('/downloads/latest.txt')
+      .then((r) => r.ok ? r.text() : null)
+      .then((t) => t && t.trim() && setWheelFile(t.trim()))
+      .catch(() => {})
+  }, [])
+
+  const wheelUrl = `/downloads/${wheelFile}`
 
   return (
     <div className="download-page">
@@ -72,14 +82,14 @@ export default function Download() {
           <h2>Install from wheel</h2>
           <p>Download the wheel and install locally:</p>
           <div className="command-block">
-            <code>pip install {window.location.origin}{wheelUrl}</code>
+            <code>pip install {mounted ? window.location.origin + wheelUrl : '...'}</code>
             <CopyButton
-              text={`pip install ${window.location.origin}${wheelUrl}`}
+              text={`pip install ${mounted ? window.location.origin + wheelUrl : ''}`}
               label="Copy pip install from URL"
             />
           </div>
           <p className="download-or">
-            Or <a href={wheelUrl} download>download navigator.whl</a> and run:
+            Or <a href={wheelUrl} download>download {wheelFile}</a> and run:
           </p>
           <div className="command-block">
             <code>pip install ~/Downloads/navigator.whl</code>
