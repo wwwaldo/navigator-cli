@@ -1,0 +1,98 @@
+.download-page {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.download-back {
+  display: inline-block;
+  margin-bottom: 1.5rem;
+  font-size: 0.9375rem;
+  color: #666;
+}
+
+.download-back:hover {
+  color: #1a1a1a;
+  text-decoration: none;
+}
+
+.download-content h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0 0 1.5rem;
+}
+
+.download-section {
+  margin-bottom: 2rem;
+}
+
+.download-section h2 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+}
+
+.download-section p {
+  margin: 0 0 0.75rem;
+  color: #555;
+  font-size: 0.9375rem;
+}
+
+.download-or {
+  margin-top: 0.5rem !important;
+}
+
+.command-block {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin: 0.5rem 0;
+}
+
+.command-block code {
+  flex: 1;
+  min-width: 200px;
+  padding: 0.75rem 1rem;
+  background: #f5f5f5;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+  font-size: 0.875rem;
+}
+
+.copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  font-family: inherit;
+  color: #666;
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.copy-btn:hover {
+  background: #f5f5f5;
+  color: #1a1a1a;
+}
+
+.copy-btn.copied {
+  color: #22c55e;
+}
+
+.copy-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.download-section a {
+  color: #2563eb;
+}
+
+.download-section a:hover {
+  text-decoration: underline;
+}

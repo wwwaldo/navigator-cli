@@ -1,0 +1,113 @@
+.docs {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.docs-back {
+  display: inline-block;
+  margin-bottom: 1.5rem;
+  font-size: 0.9375rem;
+  color: #666;
+}
+
+.docs-back:hover {
+  color: #1a1a1a;
+  text-decoration: none;
+}
+
+.docs-article {
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+.docs-article h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0 0 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.docs-article h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 2rem 0 0.75rem;
+}
+
+.docs-article h3 {
+  font-size: 1.0625rem;
+  font-weight: 600;
+  margin: 1.5rem 0 0.5rem;
+}
+
+.docs-article p {
+  margin: 0 0 1rem;
+  color: #333;
+}
+
+.docs-article ul,
+.docs-article ol {
+  margin: 0 0 1rem;
+  padding-left: 1.5rem;
+}
+
+.docs-article li {
+  margin-bottom: 0.25rem;
+}
+
+.docs-article pre {
+  margin: 1rem 0;
+  padding: 1rem 1.25rem;
+  background: #f5f5f5;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  overflow-x: auto;
+}
+
+.docs-article pre code {
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Mono', monospace;
+  font-size: 0.875rem;
+  color: #1a1a1a;
+  background: none;
+  padding: 0;
+}
+
+.docs-article code {
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Mono', monospace;
+  font-size: 0.875em;
+  background: #f5f5f5;
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+}
+
+.docs-article table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  font-size: 0.9375rem;
+}
+
+.docs-article th,
+.docs-article td {
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  border: 1px solid #e5e5e5;
+}
+
+.docs-article th {
+  background: #f9f9f9;
+  font-weight: 600;
+}
+
+.docs-article a {
+  color: #2563eb;
+}
+
+.docs-article a:hover {
+  text-decoration: underline;
+}
+
+.docs-article strong {
+  font-weight: 600;
+}

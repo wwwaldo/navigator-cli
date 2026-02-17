@@ -1,0 +1,20 @@
+[build]
+  command = "npm run build:all"
+  publish = "dist"
+
+# Serve install script and CLI artifacts as static files (must come before SPA redirect)
+[[redirects]]
+  from = "/install.sh"
+  to = "/install.sh"
+  status = 200
+
+[[redirects]]
+  from = "/downloads/*"
+  to = "/downloads/:splat"
+  status = 200
+
+# SPA: redirect all other routes to index.html for client-side routing
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
