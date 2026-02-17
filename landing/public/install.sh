@@ -5,7 +5,8 @@
 set -e
 
 BASE_URL="${NAVIGATOR_INSTALL_URL:-https://getnavigator.app}"
-WHEEL_FILE=$(curl -fsSL "$BASE_URL/downloads/latest.txt" 2>/dev/null || echo "navigator-0.1.0-py3-none-any.whl")
+WHEEL_FILE=$(curl -fsSL "$BASE_URL/downloads/latest.txt" 2>/dev/null | tr -d '\r\n' | grep -E '^navigator-[0-9.]+-py3-none-any\.whl$' | head -1)
+WHEEL_FILE="${WHEEL_FILE:-navigator-0.1.0-py3-none-any.whl}"
 WHEEL_URL="$BASE_URL/downloads/$WHEEL_FILE"
 
 # Check Python
@@ -19,7 +20,19 @@ python3 -c 'import sys; exit(0 if sys.version_info >= (3, 10) else 1)' 2>/dev/nu
 }
 
 echo "Installing Navigator..."
-python3 -m pip install --quiet "$WHEEL_URL"
+TMP_DIR=$(mktemp -d 2>/dev/null || mktemp -d -t navigator)
+trap 'rm -rf "$TMP_DIR"' EXIT
+TMP_WHL="$TMP_DIR/$WHEEL_FILE"
+if ! curl -fsSL "$WHEEL_URL" -o "$TMP_WHL"; then
+  echo "Error: Failed to download Navigator. Check your connection and try again."
+  exit 1
+fi
+if ! head -c 2 "$TMP_WHL" | grep -q '^PK'; then
+  echo "Error: Downloaded file is not a valid wheel (server may have returned an error page)."
+  echo "Try: pip install $WHEEL_URL"
+  exit 1
+fi
+python3 -m pip install --quiet "$TMP_WHL"
 
 if command -v navigator >/dev/null 2>&1; then
   echo ""
