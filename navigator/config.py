@@ -10,6 +10,23 @@ CONVERSATIONS_PATH = NAVIGATOR_DIR / "conversations.jsonl"
 PREFERENCES_PATH = NAVIGATOR_DIR / "preferences.jsonl"
 
 DEFAULT_MODEL = "claude-sonnet-4-5-20250929"
+OLLAMA_PREFIX = "ollama:"
+
+
+def is_ollama_model(model: str | None = None) -> bool:
+    """True if the model is an Ollama local model (ollama:modelname)."""
+    m = model if model is not None else get_model()
+    return (m or "").strip().startswith(OLLAMA_PREFIX)
+
+
+def get_ollama_model_name(model: str | None = None) -> str:
+    """Get the Ollama model name (strip ollama: prefix). Returns empty if not Ollama."""
+    m = model if model is not None else get_model()
+    if not is_ollama_model(m):
+        return ""
+    return (m or "").strip()[len(OLLAMA_PREFIX) :].strip()
+
+
 PREFERENCE_COMPRESSION_THRESHOLD = 50
 # Minimum messages (user + assistant) to evaluate; avoids learning from trivial/short convos
 MIN_CONVERSATION_MESSAGES = 6

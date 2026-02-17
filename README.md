@@ -6,8 +6,10 @@ A CLI that lets you chat with Claude through your terminal. Behind the scenes, i
 
 ```bash
 cd navigator
-pip install -e .
+bash install.sh
 ```
+
+Or manually: `pip install -e .`
 
 ## Setup
 
@@ -20,6 +22,19 @@ navigator config --api-key sk-ant-...
 
 **Note:** Setup-tokens from `claude setup-token` (OAuth) do not work for Navigator—the API returns "OAuth authentication is currently not supported" for programmatic access. Use an API key from the Anthropic Console.
 
+### Local models (Ollama)
+
+Use [Ollama](https://ollama.com) to run local open-weights models with the same tools (Read, Edit, Bash, etc.):
+
+```bash
+# Install Ollama from ollama.com, then:
+navigator model pull llama3.2
+navigator model switch ollama:llama3.2
+navigator chat
+```
+
+No API key needed for local models. Tool-capable models (Llama 3.2+, Qwen 2.5+, etc.) work best.
+
 ## Commands
 
 | Command | Description |
@@ -27,9 +42,15 @@ navigator config --api-key sk-ant-...
 | `navigator chat` | Start a conversation with Claude (supports tools: Read, Edit, Bash, etc.) |
 | `navigator learn` | Process recent conversations and extract behavioral preferences |
 | `navigator evaluate <file>` | Evaluate an external `conversations.json` file (e.g. Claude desktop export) |
+| `navigator fine-tune` | Export fine-tuning dataset (JSONL) for open-weights models (Unsloth, Axolotl, etc.) |
 | `navigator persona load <file>` | Load a JSON/JSONL file as system prompt (e.g. evaluated output) |
 | `navigator persona clear` | Clear the loaded persona |
 | `navigator preferences` | View current guidelines. Use `--clear` to reset |
+| `navigator model list` | List Anthropic models (use `--ollama` for local) |
+| `navigator model pull <model>` | Download an Ollama model |
+| `navigator model switch [model]` | Switch model (e.g. `ollama:llama3.2` for local) |
+| `navigator teach` | Explicitly teach behavioral preferences (stub) |
+| `navigator parrot` | Echo/repeat mode for voice learning (stub) |
 | `navigator config` | Set API key or model |
 | `navigator completion` | Print shell completion script (see below) |
 
@@ -83,3 +104,30 @@ navigator chat
 ```
 
 Persona files can be JSONL (evaluated format), JSON with a `persona` or `system_prompt` key, or plain text.
+
+## Fine-tuning
+
+Export a fine-tuning dataset for **open-weights models** (Llama, Mistral, Qwen, etc.). Cloud APIs like Claude don't support fine-tuning, so use Unsloth, Axolotl, or LLaMA-Factory with the exported data:
+
+```bash
+navigator fine-tune -o finetune.jsonl
+```
+
+This builds prompt-completion pairs from behavioral corrections (issues with `alternative_response`).
+
+**Output formats** (`--format` / `-f`):
+- `messages` (default) — `{"messages": [...]}` for LLaMA-Factory, Axolotl, Unsloth
+- `sharegpt` — `{"conversations": [{"from": "human", "value": "..."}, ...]}`
+- `alpaca` — `{"instruction": "...", "input": "", "output": "..."}`
+
+**Options:**
+- `--input` / `-i` — Preferences or evaluated JSONL file (default: `~/.navigator/preferences.jsonl`)
+- `--conversations` / `-c` — Conversations file for matching (default: `~/.navigator/conversations.jsonl`)
+- `--output` / `-o` — Output JSONL file (default: `finetune.jsonl`)
+- `--json` — Conversations file is a JSON array (e.g. Claude desktop export) rather than JSONL
+
+For evaluated output from an external file:
+
+```bash
+navigator fine-tune -i conversations.evaluated.jsonl -c conversations.json --json -o finetune.jsonl
+```
