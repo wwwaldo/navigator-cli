@@ -13,6 +13,14 @@
   to = "/downloads/:splat"
   status = 200
 
+# Root serves the Navigator Labs splash page (static HTML from public/labs.html)
+# force = true is required because dist/index.html exists and would otherwise shadow this rule
+[[redirects]]
+  from = "/"
+  to = "/labs.html"
+  status = 200
+  force = true
+
 # SPA: redirect all other routes to index.html for client-side routing
 [[redirects]]
   from = "/*"

@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Navigator Labs</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --blue: #2563eb;
+      --blue-light: #60a5fa;
+      --blue-glow: rgba(37, 99, 235, 0.15);
+      --blue-glow-strong: rgba(37, 99, 235, 0.3);
+      --surface: #FAFAFA;
+      --glass: rgba(255, 255, 255, 0.6);
+      --glass-border: rgba(255, 255, 255, 0.8);
+      --text: #111;
+      --text-secondary: #555;
+      --text-muted: #999;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--surface);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ─── Animated grid background ─── */
+    .grid-bg {
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,0,0,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,0,0,0.025) 1px, transparent 1px);
+      background-size: 32px 32px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ─── Floating gradient orbs ─── */
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0;
+      animation: orb-in 2s ease forwards;
+    }
+
+    .orb-1 {
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(37,99,235,0.08) 0%, transparent 70%);
+      top: -200px; right: -100px;
+      animation-delay: 0.2s;
+    }
+
+    .orb-2 {
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(139,92,246,0.06) 0%, transparent 70%);
+      bottom: -150px; left: -100px;
+      animation-delay: 0.5s;
+    }
+
+    .orb-3 {
+      width: 300px; height: 300px;
+      background: radial-gradient(circle, rgba(37,99,235,0.05) 0%, transparent 70%);
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      animation-delay: 0.8s;
+    }
+
+    @keyframes orb-in {
+      to { opacity: 1; }
+    }
+
+    /* ─── Particle canvas ─── */
+    #particles {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* ─── Nav ─── */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      padding: 1.25rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      background: rgba(250,250,250,0.7);
+      border-bottom: 1px solid rgba(0,0,0,0.04);
+      transition: all 0.3s ease;
+    }
+
+    nav.scrolled {
+      box-shadow: 0 1px 20px rgba(0,0,0,0.05);
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    .nav-logo svg {
+      width: 28px;
+      height: 28px;
+    }
+
+    .nav-github {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: transparent;
+      color: var(--text);
+      text-decoration: none;
+      font-size: 0.8rem;
+      font-weight: 500;
+      border-radius: 8px;
+      border: 1px solid rgba(0,0,0,0.1);
+      transition: all 0.25s ease;
+    }
+
+    .nav-github:hover {
+      background: var(--text);
+      color: #fff;
+      border-color: var(--text);
+    }
+
+    .nav-github svg { width: 16px; height: 16px; }
+
+    /* ─── Hero ─── */
+    .hero {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 6rem 2rem 4rem;
+    }
+
+    .logo-container {
+      position: relative;
+      margin-bottom: 3rem;
+      opacity: 0;
+      animation: fade-up 0.8s ease 0.3s forwards;
+    }
+
+    @keyframes pixel-glow-pulse {
+      0%, 100% { opacity: 0.5; }
+      50% { opacity: 1; }
+    }
+
+    .pixel-glow {
+      animation: pixel-glow-pulse 4s ease-in-out infinite;
+    }
+
+    h1 {
+      font-size: clamp(2.5rem, 6vw, 4rem);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      color: var(--text);
+      margin-bottom: 1.25rem;
+      max-width: 700px;
+      opacity: 0;
+      animation: fade-up 0.8s ease 0.6s forwards;
+    }
+
+    h1 .gradient-text {
+      background: linear-gradient(135deg, var(--blue) 0%, #8b5cf6 50%, var(--blue) 100%);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: gradient-shift 6s ease infinite;
+    }
+
+    @keyframes gradient-shift {
+      0%, 100% { background-position: 0% center; }
+      50% { background-position: 200% center; }
+    }
+
+    .sub {
+      font-size: 1.2rem;
+      line-height: 1.7;
+      color: var(--text-secondary);
+      margin-bottom: 2.5rem;
+      max-width: 520px;
+      font-weight: 400;
+      opacity: 0;
+      animation: fade-up 0.8s ease 0.8s forwards;
+    }
+
+    .hero-cta {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      opacity: 0;
+      animation: fade-up 0.8s ease 1s forwards;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.85rem 1.8rem;
+      background: var(--text);
+      color: #fff;
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 600;
+      border-radius: 12px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-primary::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, var(--blue), #8b5cf6);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .btn-primary:hover::before { opacity: 1; }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(37,99,235,0.25);
+    }
+
+    .btn-primary span,
+    .btn-primary svg { position: relative; z-index: 1; }
+
+    .btn-primary svg { width: 18px; height: 18px; }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.85rem 1.8rem;
+      background: transparent;
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      border-radius: 12px;
+      border: 1px solid rgba(0,0,0,0.08);
+      transition: all 0.3s ease;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(0,0,0,0.03);
+      border-color: rgba(0,0,0,0.15);
+      color: var(--text);
+    }
+
+    /* ─── Features Section ─── */
+    .features-section {
+      position: relative;
+      z-index: 1;
+      padding: 6rem 2rem 8rem;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .section-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      font-weight: 500;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--blue);
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+
+    .section-title {
+      font-size: clamp(1.5rem, 3vw, 2rem);
+      font-weight: 700;
+      text-align: center;
+      letter-spacing: -0.02em;
+      margin-bottom: 4rem;
+      color: var(--text);
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+
+    .card {
+      padding: 2rem;
+      border-radius: 20px;
+      background: var(--glass);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(30px);
+    }
+
+    .card.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, var(--blue-glow) 0%, transparent 60%);
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.06), 0 0 0 1px rgba(37,99,235,0.1);
+      border-color: rgba(37,99,235,0.15);
+    }
+
+    .card:hover::before { opacity: 1; }
+
+    .card-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--blue-glow), rgba(139,92,246,0.1));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1.25rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .card-icon svg {
+      width: 22px;
+      height: 22px;
+      color: var(--blue);
+    }
+
+    .card h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .card p {
+      font-size: 0.875rem;
+      line-height: 1.6;
+      color: var(--text-secondary);
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ─── Demo strip ─── */
+    .demo-section {
+      position: relative;
+      z-index: 1;
+      padding: 0 2rem 8rem;
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    .chat-window {
+      background: #fff;
+      border-radius: 20px;
+      border: 1px solid rgba(0,0,0,0.06);
+      box-shadow: 0 20px 80px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.02);
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.8s ease;
+    }
+
+    .chat-window.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .chat-titlebar {
+      padding: 1rem 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      border-bottom: 1px solid rgba(0,0,0,0.04);
+      background: rgba(250,250,250,0.5);
+    }
+
+    .chat-dots {
+      display: flex;
+      gap: 6px;
+    }
+
+    .chat-dots span {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.08);
+    }
+
+    .chat-dots span:first-child { background: #ff5f57; }
+    .chat-dots span:nth-child(2) { background: #febc2e; }
+    .chat-dots span:nth-child(3) { background: #28c840; }
+
+    .chat-title {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      flex: 1;
+      text-align: center;
+    }
+
+    .chat-body {
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .chat-msg {
+      max-width: 80%;
+      padding: 0.75rem 1rem;
+      border-radius: 16px;
+      font-size: 0.85rem;
+      line-height: 1.5;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.5s ease;
+    }
+
+    .chat-msg.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .msg-user {
+      align-self: flex-end;
+      background: var(--text);
+      color: #fff;
+      border-bottom-right-radius: 6px;
+    }
+
+    .msg-agent {
+      align-self: flex-start;
+      background: rgba(0,0,0,0.04);
+      color: var(--text);
+      border-bottom-left-radius: 6px;
+    }
+
+    .msg-meta {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+      padding: 0 0.5rem;
+      align-self: flex-start;
+    }
+
+    .typing-indicator {
+      display: flex;
+      gap: 4px;
+      padding: 0.75rem 1rem;
+      align-self: flex-start;
+      opacity: 0;
+    }
+
+    .typing-indicator.visible { opacity: 1; }
+
+    .typing-indicator span {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--text-muted);
+      animation: typing-bounce 1.4s infinite;
+    }
+
+    .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes typing-bounce {
+      0%, 60%, 100% { transform: translateY(0); }
+      30% { transform: translateY(-4px); }
+    }
+
+    /* ─── Footer ─── */
+    footer {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 3rem 2rem;
+      border-top: 1px solid rgba(0,0,0,0.04);
+    }
+
+    footer p {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    footer a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    footer a:hover { color: var(--blue); }
+
+    /* ─── Animations ─── */
+    @keyframes fade-up {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes needle-settle {
+      0% { transform: rotate(-30deg); }
+      15% { transform: rotate(20deg); }
+      30% { transform: rotate(-12deg); }
+      45% { transform: rotate(8deg); }
+      60% { transform: rotate(-4deg); }
+      75% { transform: rotate(2deg); }
+      100% { transform: rotate(0deg); }
+    }
+
+    .compass-needle {
+      animation: needle-settle 2.2s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+    }
+
+    /* ─── Responsive ─── */
+    @media (max-width: 768px) {
+      .cards {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+
+      .hero-cta {
+        flex-direction: column;
+      }
+
+      nav { padding: 1rem 1.25rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="grid-bg"></div>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+  <canvas id="particles"></canvas>
+
+  <!-- Nav -->
+  <nav id="nav">
+    <a href="#" class="nav-logo">
+      <svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg">
+        <g fill="#111">
+          <rect x="56" y="8" width="8" height="8"/><rect x="64" y="8" width="8" height="8"/>
+          <rect x="72" y="8" width="8" height="8"/><rect x="80" y="8" width="8" height="8"/>
+          <rect x="88" y="8" width="8" height="8"/><rect x="96" y="8" width="8" height="8"/>
+          <rect x="104" y="16" width="8" height="8"/><rect x="112" y="24" width="8" height="8"/>
+          <rect x="120" y="32" width="8" height="8"/><rect x="128" y="40" width="8" height="8"/>
+          <rect x="136" y="48" width="8" height="8"/><rect x="136" y="56" width="8" height="8"/>
+          <rect x="144" y="64" width="8" height="8"/><rect x="144" y="72" width="8" height="8"/>
+          <rect x="144" y="80" width="8" height="8"/><rect x="144" y="88" width="8" height="8"/>
+          <rect x="136" y="96" width="8" height="8"/><rect x="136" y="104" width="8" height="8"/>
+          <rect x="128" y="112" width="8" height="8"/><rect x="120" y="120" width="8" height="8"/>
+          <rect x="112" y="128" width="8" height="8"/><rect x="104" y="136" width="8" height="8"/>
+          <rect x="96" y="144" width="8" height="8"/><rect x="88" y="144" width="8" height="8"/>
+          <rect x="80" y="144" width="8" height="8"/><rect x="72" y="144" width="8" height="8"/>
+          <rect x="64" y="144" width="8" height="8"/><rect x="56" y="144" width="8" height="8"/>
+          <rect x="48" y="136" width="8" height="8"/><rect x="40" y="128" width="8" height="8"/>
+          <rect x="32" y="120" width="8" height="8"/><rect x="24" y="112" width="8" height="8"/>
+          <rect x="16" y="104" width="8" height="8"/><rect x="16" y="96" width="8" height="8"/>
+          <rect x="8" y="88" width="8" height="8"/><rect x="8" y="80" width="8" height="8"/>
+          <rect x="8" y="72" width="8" height="8"/><rect x="8" y="64" width="8" height="8"/>
+          <rect x="16" y="56" width="8" height="8"/><rect x="16" y="48" width="8" height="8"/>
+          <rect x="24" y="40" width="8" height="8"/><rect x="32" y="32" width="8" height="8"/>
+          <rect x="40" y="24" width="8" height="8"/><rect x="48" y="16" width="8" height="8"/>
+        </g>
+        <polygon points="80,28 72,76 80,70 88,76" fill="#2563eb"/>
+        <polygon points="80,132 72,84 80,90 88,84" fill="#ccc"/>
+        <rect x="76" y="76" width="4" height="4" fill="#111"/>
+        <rect x="80" y="76" width="4" height="4" fill="#111"/>
+        <rect x="76" y="80" width="4" height="4" fill="#111"/>
+        <rect x="80" y="80" width="4" height="4" fill="#111"/>
+      </svg>
+      Navigator Labs
+    </a>
+    <a href="https://github.com/navigatorlabs" class="nav-github" target="_blank" rel="noopener">
+      <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+      GitHub
+    </a>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="logo-container">
+      <!-- Pixelated compass SVG with pixel glow -->
+      <svg width="224" height="224" viewBox="0 0 224 224" xmlns="http://www.w3.org/2000/svg" style="position:relative;z-index:1">
+        <!-- Pixel glow - outer scattered pixels (faintest) -->
+        <g class="pixel-glow" fill="#2563eb" opacity="0.08">
+          <rect x="98" y="2" width="4" height="4"/>
+          <rect x="122" y="2" width="4" height="4"/>
+          <rect x="98" y="218" width="4" height="4"/>
+          <rect x="122" y="218" width="4" height="4"/>
+          <rect x="2" y="98" width="4" height="4"/>
+          <rect x="2" y="122" width="4" height="4"/>
+          <rect x="218" y="98" width="4" height="4"/>
+          <rect x="218" y="122" width="4" height="4"/>
+          <rect x="26" y="26" width="4" height="4"/>
+          <rect x="194" y="26" width="4" height="4"/>
+          <rect x="26" y="194" width="4" height="4"/>
+          <rect x="194" y="194" width="4" height="4"/>
+          <rect x="58" y="10" width="4" height="4"/>
+          <rect x="162" y="10" width="4" height="4"/>
+          <rect x="58" y="210" width="4" height="4"/>
+          <rect x="162" y="210" width="4" height="4"/>
+          <rect x="10" y="58" width="4" height="4"/>
+          <rect x="10" y="162" width="4" height="4"/>
+          <rect x="210" y="58" width="4" height="4"/>
+          <rect x="210" y="162" width="4" height="4"/>
+        </g>
+
+        <!-- Pixel glow - middle scattered pixels -->
+        <g class="pixel-glow" fill="#2563eb" opacity="0.12">
+          <rect x="106" y="10" width="4" height="4"/>
+          <rect x="114" y="10" width="4" height="4"/>
+          <rect x="106" y="210" width="4" height="4"/>
+          <rect x="114" y="210" width="4" height="4"/>
+          <rect x="10" y="106" width="4" height="4"/>
+          <rect x="10" y="114" width="4" height="4"/>
+          <rect x="210" y="106" width="4" height="4"/>
+          <rect x="210" y="114" width="4" height="4"/>
+          <rect x="42" y="18" width="4" height="4"/>
+          <rect x="178" y="18" width="4" height="4"/>
+          <rect x="42" y="202" width="4" height="4"/>
+          <rect x="178" y="202" width="4" height="4"/>
+          <rect x="18" y="42" width="4" height="4"/>
+          <rect x="18" y="178" width="4" height="4"/>
+          <rect x="202" y="42" width="4" height="4"/>
+          <rect x="202" y="178" width="4" height="4"/>
+          <rect x="74" y="18" width="4" height="4"/>
+          <rect x="146" y="18" width="4" height="4"/>
+          <rect x="74" y="202" width="4" height="4"/>
+          <rect x="146" y="202" width="4" height="4"/>
+          <rect x="18" y="74" width="4" height="4"/>
+          <rect x="18" y="146" width="4" height="4"/>
+          <rect x="202" y="74" width="4" height="4"/>
+          <rect x="202" y="146" width="4" height="4"/>
+        </g>
+
+        <!-- Pixel glow - inner sparse halo (brightest) -->
+        <g class="pixel-glow" fill="#2563eb" opacity="0.18">
+          <rect x="90" y="18" width="4" height="4"/>
+          <rect x="130" y="18" width="4" height="4"/>
+          <rect x="90" y="202" width="4" height="4"/>
+          <rect x="130" y="202" width="4" height="4"/>
+          <rect x="18" y="90" width="4" height="4"/>
+          <rect x="18" y="130" width="4" height="4"/>
+          <rect x="202" y="90" width="4" height="4"/>
+          <rect x="202" y="130" width="4" height="4"/>
+          <rect x="50" y="34" width="4" height="4"/>
+          <rect x="170" y="34" width="4" height="4"/>
+          <rect x="50" y="186" width="4" height="4"/>
+          <rect x="170" y="186" width="4" height="4"/>
+          <rect x="34" y="50" width="4" height="4"/>
+          <rect x="34" y="170" width="4" height="4"/>
+          <rect x="186" y="50" width="4" height="4"/>
+          <rect x="186" y="170" width="4" height="4"/>
+        </g>
+
+        <!-- Compass body (offset to center in larger viewbox) -->
+        <g transform="translate(32, 32)">
+          <!-- Outer ring pixels -->
+          <g fill="#111">
+            <rect x="56" y="8" width="8" height="8"/><rect x="64" y="8" width="8" height="8"/>
+            <rect x="72" y="8" width="8" height="8"/><rect x="80" y="8" width="8" height="8"/>
+            <rect x="88" y="8" width="8" height="8"/><rect x="96" y="8" width="8" height="8"/>
+            <rect x="104" y="16" width="8" height="8"/><rect x="112" y="24" width="8" height="8"/>
+            <rect x="120" y="32" width="8" height="8"/><rect x="128" y="40" width="8" height="8"/>
+            <rect x="136" y="48" width="8" height="8"/><rect x="136" y="56" width="8" height="8"/>
+            <rect x="144" y="64" width="8" height="8"/><rect x="144" y="72" width="8" height="8"/>
+            <rect x="144" y="80" width="8" height="8"/><rect x="144" y="88" width="8" height="8"/>
+            <rect x="136" y="96" width="8" height="8"/><rect x="136" y="104" width="8" height="8"/>
+            <rect x="128" y="112" width="8" height="8"/><rect x="120" y="120" width="8" height="8"/>
+            <rect x="112" y="128" width="8" height="8"/><rect x="104" y="136" width="8" height="8"/>
+            <rect x="96" y="144" width="8" height="8"/><rect x="88" y="144" width="8" height="8"/>
+            <rect x="80" y="144" width="8" height="8"/><rect x="72" y="144" width="8" height="8"/>
+            <rect x="64" y="144" width="8" height="8"/><rect x="56" y="144" width="8" height="8"/>
+            <rect x="48" y="136" width="8" height="8"/><rect x="40" y="128" width="8" height="8"/>
+            <rect x="32" y="120" width="8" height="8"/><rect x="24" y="112" width="8" height="8"/>
+            <rect x="16" y="104" width="8" height="8"/><rect x="16" y="96" width="8" height="8"/>
+            <rect x="8" y="88" width="8" height="8"/><rect x="8" y="80" width="8" height="8"/>
+            <rect x="8" y="72" width="8" height="8"/><rect x="8" y="64" width="8" height="8"/>
+            <rect x="16" y="56" width="8" height="8"/><rect x="16" y="48" width="8" height="8"/>
+            <rect x="24" y="40" width="8" height="8"/><rect x="32" y="32" width="8" height="8"/>
+            <rect x="40" y="24" width="8" height="8"/><rect x="48" y="16" width="8" height="8"/>
+          </g>
+
+          <!-- Cardinal labels -->
+          <g fill="#2563eb" font-family="'JetBrains Mono', monospace" font-size="13" font-weight="600" text-anchor="middle">
+            <text x="80" y="34">N</text>
+            <text x="80" y="142">S</text>
+            <text x="30" y="85">W</text>
+            <text x="130" y="85">E</text>
+          </g>
+
+          <!-- Tick marks -->
+          <rect x="76" y="40" width="8" height="8" fill="#e5e7eb"/>
+          <rect x="76" y="112" width="8" height="8" fill="#e5e7eb"/>
+          <rect x="40" y="76" width="8" height="8" fill="#e5e7eb"/>
+          <rect x="112" y="76" width="8" height="8" fill="#e5e7eb"/>
+
+          <!-- Diagonal ticks -->
+          <rect x="112" y="40" width="8" height="8" fill="#f3f4f6"/>
+          <rect x="40" y="40" width="8" height="8" fill="#f3f4f6"/>
+          <rect x="112" y="112" width="8" height="8" fill="#f3f4f6"/>
+          <rect x="40" y="112" width="8" height="8" fill="#f3f4f6"/>
+
+          <!-- Needle (animated) -->
+          <g class="compass-needle" style="transform-origin: 80px 80px;">
+            <polygon points="80,28 72,76 80,70 88,76" fill="#2563eb"/>
+            <polygon points="80,132 72,84 80,90 88,84" fill="#d1d5db"/>
+          </g>
+
+          <!-- Center hub -->
+          <rect x="74" y="74" width="6" height="6" fill="#111"/>
+          <rect x="80" y="74" width="6" height="6" fill="#111"/>
+          <rect x="74" y="80" width="6" height="6" fill="#111"/>
+          <rect x="80" y="80" width="6" height="6" fill="#111"/>
+          <rect x="74" y="74" width="2" height="2" fill="#2563eb"/>
+        </g>
+      </svg>
+    </div>
+
+    <h1>Chat apps and agents<br>that <span class="gradient-text">know you</span>.</h1>
+
+    <p class="sub">
+      AI experiences built with persistent memory and time awareness.
+      Every conversation picks up right where the last one ended.
+    </p>
+
+    <div class="hero-cta">
+      <a href="https://github.com/navigatorlabs" class="btn-primary" target="_blank" rel="noopener">
+        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        <span>View on GitHub</span>
+      </a>
+      <a href="#features" class="btn-secondary">Learn more</a>
+    </div>
+
+  </section>
+
+  <!-- Features -->
+  <section class="features-section" id="features">
+    <div class="section-label">Features</div>
+    <h2 class="section-title">Built different from the ground up.</h2>
+
+    <div class="cards">
+      <div class="card" data-delay="0">
+        <div class="card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+            <line x1="12" y1="22.08" x2="12" y2="12"/>
+          </svg>
+        </div>
+        <h3>Persistent Memory</h3>
+        <p>Your agents remember every conversation, preference, and decision. No more starting from scratch.</p>
+      </div>
+
+      <div class="card" data-delay="100">
+        <div class="card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+        </div>
+        <h3>Time Awareness</h3>
+        <p>Agents understand when they're talking to you and adapt their behavior to the moment.</p>
+      </div>
+
+      <div class="card" data-delay="200">
+        <div class="card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+        </div>
+        <h3>Context Carryover</h3>
+        <p>Conversations flow naturally across sessions. Your context is always there when you come back.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Demo -->
+  <section class="demo-section">
+    <div class="section-label">In action</div>
+    <h2 class="section-title" style="margin-bottom: 2rem;">It remembers, so you don't have to.</h2>
+
+    <div class="chat-window" id="chatDemo">
+      <div class="chat-titlebar">
+        <div class="chat-dots"><span></span><span></span><span></span></div>
+        <div class="chat-title">Navigator Agent</div>
+        <div style="width: 42px;"></div>
+      </div>
+      <div class="chat-body">
+        <div class="msg-meta" id="chatMeta"></div>
+        <div class="chat-msg msg-agent" id="msg1">Good morning! I see you were working on the API migration last night. Want to pick up where you left off?</div>
+        <div class="chat-msg msg-user" id="msg2">Yes, I got stuck on the auth middleware.</div>
+        <div class="chat-msg msg-agent" id="msg3">Right — you mentioned the token refresh was failing silently. I've been thinking about that. Want me to walk through a fix?</div>
+        <div class="typing-indicator" id="typingDots">
+          <span></span><span></span><span></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p>Navigator Labs &mdash; 2026 &nbsp;&middot;&nbsp; <a href="https://github.com/navigatorlabs" target="_blank" rel="noopener">GitHub</a></p>
+  </footer>
+
+  <script>
+    // ─── Particle system ───
+    const canvas = document.getElementById('particles');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+    let mouse = { x: -1000, y: -1000 };
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+
+    class Particle {
+      constructor() {
+        this.reset();
+      }
+      reset() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.size = Math.random() * 2 + 0.5;
+        this.speedX = (Math.random() - 0.5) * 0.3;
+        this.speedY = (Math.random() - 0.5) * 0.3;
+        this.opacity = Math.random() * 0.15 + 0.03;
+        this.isBlue = Math.random() > 0.7;
+      }
+      update() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+
+        const dx = mouse.x - this.x;
+        const dy = mouse.y - this.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 150) {
+          const force = (150 - dist) / 150;
+          this.x -= dx * force * 0.01;
+          this.y -= dy * force * 0.01;
+        }
+
+        if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) {
+          this.reset();
+        }
+      }
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fillStyle = this.isBlue
+          ? `rgba(37, 99, 235, ${this.opacity * 2})`
+          : `rgba(0, 0, 0, ${this.opacity})`;
+        ctx.fill();
+      }
+    }
+
+    function initParticles() {
+      particles = [];
+      const count = Math.min(80, Math.floor((canvas.width * canvas.height) / 15000));
+      for (let i = 0; i < count; i++) {
+        particles.push(new Particle());
+      }
+    }
+
+    function drawLines() {
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x;
+          const dy = particles[i].y - particles[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 120) {
+            ctx.beginPath();
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.strokeStyle = `rgba(37, 99, 235, ${0.03 * (1 - dist / 120)})`;
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
+          }
+        }
+      }
+    }
+
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(p => {
+        p.update();
+        p.draw();
+      });
+      drawLines();
+      requestAnimationFrame(animate);
+    }
+
+    resizeCanvas();
+    initParticles();
+    animate();
+
+    window.addEventListener('resize', () => {
+      resizeCanvas();
+      initParticles();
+    });
+
+    window.addEventListener('mousemove', e => {
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+    });
+
+    // ─── Nav scroll effect ───
+    window.addEventListener('scroll', () => {
+      document.getElementById('nav').classList.toggle('scrolled', window.scrollY > 20);
+    });
+
+    // ─── Intersection observer for cards & chat ───
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const delay = entry.target.dataset.delay || 0;
+          setTimeout(() => {
+            entry.target.classList.add('visible');
+          }, parseInt(delay));
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.2 });
+
+    document.querySelectorAll('.card, .chat-window').forEach(el => observer.observe(el));
+
+    // ─── Chat demo animation ───
+    const chatObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          animateChat();
+          chatObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.3 });
+
+    chatObserver.observe(document.getElementById('chatDemo'));
+
+    function animateChat() {
+      const meta = document.getElementById('chatMeta');
+      const msgs = [
+        document.getElementById('msg1'),
+        document.getElementById('msg2'),
+        document.getElementById('msg3')
+      ];
+      const typing = document.getElementById('typingDots');
+
+      const now = new Date();
+      const hours = now.getHours();
+      const greeting = hours < 12 ? 'morning' : hours < 17 ? 'afternoon' : 'evening';
+      const timeStr = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+
+      meta.textContent = `Today, ${timeStr}`;
+      meta.style.opacity = '0';
+      meta.style.transition = 'opacity 0.3s ease';
+
+      msgs.forEach(m => {
+        m.style.opacity = '0';
+        m.style.transform = 'translateY(10px)';
+        m.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+      });
+      typing.style.opacity = '0';
+      typing.style.transition = 'opacity 0.3s ease';
+
+      if (greeting !== 'morning') {
+        msgs[0].textContent = `Good ${greeting}! I see you were working on the API migration earlier. Want to pick up where you left off?`;
+      }
+
+      setTimeout(() => { meta.style.opacity = '1'; }, 300);
+      setTimeout(() => { msgs[0].style.opacity = '1'; msgs[0].style.transform = 'translateY(0)'; }, 600);
+      setTimeout(() => { msgs[1].style.opacity = '1'; msgs[1].style.transform = 'translateY(0)'; }, 1800);
+      setTimeout(() => { typing.style.opacity = '1'; }, 2600);
+      setTimeout(() => {
+        typing.style.opacity = '0';
+        msgs[2].style.opacity = '1';
+        msgs[2].style.transform = 'translateY(0)';
+      }, 3800);
+    }
+  </script>
+</body>
+</html>
