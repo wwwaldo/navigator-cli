@@ -69,10 +69,10 @@ function App() {
     <BrowserRouter>
       <header className="header">
         <div className="header-left">
-          <Link to="/" className="header-logo">
+          <a href="/" className="header-logo">
             <NavigatorLogo />
             <span style={{ fontWeight: 600, fontSize: '1rem' }}>Navigator</span>
-          </Link>
+          </a>
           <nav className="header-nav">
             <a href="#features">Features</a>
             <Link to="/docs">Docs</Link>
@@ -90,7 +90,7 @@ function App() {
 
       <Routes>
         <Route
-          path="/"
+          path="/cli"
           element={
             <main className="splash">
               <div className="splash-mascot">

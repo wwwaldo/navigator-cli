@@ -13,6 +13,12 @@
   to = "/downloads/:splat"
   status = 200
 
+# Root serves the Navigator Labs splash page (static HTML from public/labs.html)
+[[redirects]]
+  from = "/"
+  to = "/labs.html"
+  status = 200
+
 # SPA: redirect all other routes to index.html for client-side routing
 [[redirects]]
   from = "/*"
